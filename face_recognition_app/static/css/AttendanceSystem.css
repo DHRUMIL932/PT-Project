@@ -1,0 +1,195 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background: #2C3E50;
+    color: white;
+    padding: 20px;
+    height: 100vh;
+    position: fixed;
+}
+
+.sidebar h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.profile {
+    text-align: center;
+}
+
+.profile img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.profile h3 {
+    margin: 5px 0;
+}
+
+#edit-name-btn {
+    background: #E67E22;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-top: 5px;
+    border-radius: 5px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.sidebar ul li {
+    padding: 15px;
+    margin: 10px 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border-radius: 5px;
+}
+
+a {
+    text-decoration: none; /* Removes underline */
+    color: inherit; /* Keeps the text color same as the surrounding text */
+}
+
+
+.sidebar ul li:hover {
+    background: #34495E;
+}
+
+.sidebar ul li i {
+    margin-right: 10px;
+}
+
+/* Add these styles to your AttendanceSystem.css file */
+
+#attendanceStatusSection {
+    margin-top: 20px;
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.status-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.present-students,
+.absent-students {
+    flex: 1;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.present-students {
+    background-color: rgba(0, 128, 0, 0.1);
+    /* Light green background */
+    margin-right: 10px;
+}
+
+.absent-students {
+    background-color: rgba(255, 0, 0, 0.1);
+    /* Light red background */
+}
+
+.present-students h3,
+.absent-students h3 {
+    margin-top: 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #ddd;
+}
+
+.present-students h3 {
+    color: #008000;
+    /* Green text */
+}
+
+.absent-students h3 {
+    color: #cc0000;
+    /* Red text */
+}
+
+#presentStudentsList,
+#absentStudentsList {
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 10px;
+}
+
+#presentStudentsList li,
+#absentStudentsList li {
+    padding: 5px 0;
+    border-bottom: 1px dotted #ddd;
+}
+
+#presentStudentsList li:last-child,
+#absentStudentsList li:last-child {
+    border-bottom: none;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+    text-align: center;
+    margin-left: 260px; /* Ensures content is properly aligned */
+}
+
+.options-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.option-box {
+    background: white;
+    padding: 20px;
+    box-shadow: 0px 0px 10px #ddd;
+    width: 250px;
+    text-align: center;
+}
+
+.hidden {
+    display: none;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+th {
+    background: #f4f4f4;
+}
+
+button {
+    padding: 10px;
+    margin: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #ddd;
+}

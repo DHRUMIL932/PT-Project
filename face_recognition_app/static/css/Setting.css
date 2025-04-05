@@ -1,0 +1,112 @@
+/* Sidebar */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    display: flex;
+    background-color: #f5f7fa;
+}
+
+.sidebar {
+    width: 250px;
+    height: 125vh;
+    background: #1D2835; /* Updated sidebar color */
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    color: white;
+}
+
+a {
+    text-decoration: none; /* Removes underline */
+    color: inherit; /* Keeps the text color same as the surrounding text */
+}
+
+.profile {
+    text-align: center;
+    padding-bottom: 20px;
+}
+
+.profile img {
+    width: 80px;
+    border-radius: 50%;
+}
+
+.profile h3 {
+    margin: 10px 0 5px;
+    font-size: 18px;
+    color: white;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    padding: 12px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.3s;
+    color: white;
+    border-radius: 5px;
+}
+
+.sidebar ul li:hover, 
+.sidebar ul .active {
+    background: #253649; /* Hover and active color */
+    border-radius: 5px;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: 30px;
+}
+
+h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.settings-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.settings-box {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    min-width: 300px;
+}
+
+.settings-box h3 {
+    margin-bottom: 10px;
+}
+
+.settings-box input, .settings-box textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.settings-box button {
+    background: #007bff;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.settings-box button:hover {
+    background: #0056b3;
+}

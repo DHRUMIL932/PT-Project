@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance System</title>
+    <!-- Correct way to link CSS -->
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/AttendanceSystem.css')}}">
+    <!-- Correct way to link JavaScript -->
+    <script src="{{ url_for('static', filename='js/AttendanceSystem.js') }}" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="profile">
+            <span id="teacher-name">{{ teacher_name }}</span>
+        </div>
+        <ul>
+            <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i>Home</a></li>
+            <li><i class="fas fa-user-check"></i>Attendance</li>
+            <li><a href="{{ url_for('setting') }}"><i class="fas fa-cog"></i>Settings</a></li>
+            <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i>Logout</a></li>
+        </ul>
+    </div>
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1>Attendance System</h1>
+        <p>Select how you want to mark attendance:</p>
+        <div class="options-container">
+            <div class="option-box" id="manualAttendance">
+                <h2>Manual Attendance</h2>
+                <button onclick="showManualAttendance()">Take Attendance</button>
+            </div>
+            <div class="option-box" id="faceRecognition">
+                <h2>Face Recognition</h2>
+                <button onclick="showFaceRecognition()">Start Recognition</button>
+            </div>
+        </div>
+
+        <!-- Attendance Status Section - New Addition -->
+        <!-- Add this button after the other buttons in the controls section -->
+        <div class="controls-container">
+            <!-- Existing buttons... -->
+            <button id="clearAttendanceBtn" class="btn btn-warning">Clear Today's Attendance</button>
+        </div>
+        
+        <!-- Attendance Status Section -->
+        <div id="attendanceStatusSection" class="hidden">
+            <h2>Attendance Status</h2>
+            <div class="status-container">
+                <div class="present-students">
+                    <h3>Present Students</h3>
+                    <ul id="presentStudentsList"></ul>
+                </div>
+                <div class="absent-students">
+                    <h3>Absent Students</h3>
+                    <ul id="absentStudentsList"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Attendance Section -->
+        <div id="manualAttendanceSection" class="hidden">
+            <h2>Manual Attendance</h2>
+            <button id="addManualUserBtn">Add New User</button>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Enrollment No</th>
+                        <th>Full Name</th>
+                        <th>Present</th>
+                        <th>Absent</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceTable">
+                    <!-- Rows will be added dynamically -->
+                </tbody>
+            </table>
+            <button id="saveAttendanceBtn">Save Attendance</button>
+        </div>
+        <!-- Face Recognition Section -->
+        <div id="faceRecognitionSection" class="hidden">
+            <h2>Face Recognition</h2>
+            <button id="addUserBtn">Add New User</button>
+            <button id="markAttendanceBtn">Mark Attendance</button>
+            <!-- Add User Options -->
+            <div id="addUserOptions" class="hidden">
+                <h3>Add New User</h3>
+                <button onclick="showCamera('video1', 'closeCamera1')">Capture Photo</button>
+                <button onclick="uploadPhoto()">Upload Photo</button>
+                <video id="video1" width="320" height="240" autoplay class="hidden"></video>
+                <button id="closeCamera1" class="hidden" onclick="closeCamera('video1', 'closeCamera1')">Close
+                    Camera</button>
+            </div>
+            <!-- Mark Attendance -->
+            <div id="markAttendanceSection" class="hidden">
+                <h3>Mark Attendance</h3>
+                <button onclick="showCamera('video2', 'closeCamera2')">Capture Photo</button>
+                <button id="closeCamera2" class="hidden" onclick="closeCamera('video2', 'closeCamera2')">Close
+                    Camera</button>
+                <video id="video2" width="320" height="240" autoplay class="hidden"></video>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

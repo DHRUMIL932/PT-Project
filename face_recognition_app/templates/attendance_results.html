@@ -1,0 +1,156 @@
+<!-- Create a new file: templates/attendance_results.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Results</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .container {
+            max-width: 800px;
+        }
+
+        .header-bar {
+            background-color: #4e73df;
+            color: white;
+            padding: 1rem;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .attendance-card {
+            border-radius: 5px;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            margin-top: 2rem;
+        }
+
+        .table-container {
+            padding: 1.5rem;
+        }
+
+        .btn-container {
+            padding: 1rem;
+            border-top: 1px solid #e3e6f0;
+            background-color: #f8f9fc;
+            border-radius: 0 0 5px 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Face Recognition System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('attendancesystem') }}">Attendance</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('setting') }}">Settings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Attendance Results</h2>
+        <p>Professor: {{ teacher_name }}</p>
+        <p>Subject: {{ subject_name }}</p>
+
+        <div class="attendance-card">
+            <div class="header-bar d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-0">Students Present</h4>
+                    <small>Total: {{ total_count }}</small>
+                </div>
+                <div class="timestamp">
+                    <i class="fas fa-clock me-1"></i>
+                    <span id="current-time"></span>
+                </div>
+            </div>
+
+            <div class="table-container">
+                {% if students %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Enrollment No</th>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ student.enrollment_no }}</td>
+                                <td>{{ student.name }}</td>
+                                <td>
+                                    <span class="badge bg-success">{{ student.status }}</span>
+                                </td>
+                                <td>{{ student.timestamp }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No students were recognized. Please try again.
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="btn-container d-flex justify-content-between">
+                <a href="{{ url_for('attendancesystem') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Back
+                </a>
+                <div>
+                    {% if students %}
+                    <a href="{{ url_for('download_attendance') }}" class="btn btn-success me-2">
+                        <i class="fas fa-download me-1"></i> Export CSV
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('mark_attendance') }}" class="btn btn-primary">
+                        <i class="fas fa-camera me-1"></i> New Attendance
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Display current time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString();
+        }
+
+        updateTime(); // Initial call
+        setInterval(updateTime, 1000); // Update every second
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition Attendance System</title>
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/Home.css')}}">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="profile">
+            <span id="teacher-name">{{ teacher_name }}</span>
+        </div>
+        <ul>
+            <li><i class="fas fa-home"></i> Home</li>
+            <li><a href="{{ url_for('attendancesystem') }}"><i class="fas fa-user-check"></i> Attendance</a></li>
+            <li><a href="{{ url_for('setting') }}"><i class="fas fa-cog"></i> Settings</a></li>
+            <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <h3>Welcome, <span id="teacher-name">{{ teacher_name }}</span></h3>
+            <p>Manage your timetable and attendance with ease.</p>
+
+            <!-- Timetable Section -->
+            <h2>Teacher's Timetable</h2>
+            <table id="timetable">
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Subject</th>
+                        <th>Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subject in subjects %}
+                    <tr data-id="{{ subject.id }}">
+                        <td>{{ subject.day_of_week }}</td>
+                        <td>{{ subject.subject }}</td>
+                        <td>{{ subject.start_time }} - {{ subject.end_time }}</td>
+                        <td>
+                            <button class="edit-btn">Edit</button>
+                            <button class="delete-btn">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+            <button id="add-subject-btn">Add Subject</button>
+        </div>
+    </div>
+<script src="{{ url_for('static', filename='js/Home.js') }}" defer></script>
+</body>
+</html>

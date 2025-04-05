@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | Teacher Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/Setting.css')}}">
+    <script src="{{ url_for('static', filename='js/Setting.js') }}" defer></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <div class="profile">
+            <span id="teacher-name">{{ teacher_name }}</span>
+        </div>
+        <ul>
+            <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="{{ url_for('attendancesystem') }}"><i class="fas fa-user-check"></i> Attendance</a></li>
+            <li class="active"><i class="fas fa-cog"></i> Settings</li>
+            <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <h2>⚙️ Settings <span> > Teacher > Settings</span></h2>
+
+        <div class="settings-container">
+
+            <!-- Security Settings -->
+            <div class="settings-box">
+                <h3>Security Settings</h3>
+                <input type="text" id="username" placeholder="Username">
+                <input type="password" id="current-password" placeholder="Current Password">
+                <input type="password" id="new-password" placeholder="New Password">
+                <button onclick="saveSecuritySettings()">Save</button>
+            </div>
+
+            <!-- Account Settings -->
+            <div class="settings-box">
+                <h3>Account Settings</h3>
+                <input type="text" id="first-name" placeholder="First Name">
+                <input type="text" id="last-name" placeholder="Last Name">
+                <input type="text" id="city" placeholder="City">
+                <input type="email" id="email" placeholder="Email">
+                <input type="text" id="country" placeholder="Country">
+                <textarea id="address" placeholder="Address"></textarea>
+                <button onclick="saveAccountSettings()">Save Changes</button>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>
