@@ -1,165 +1,108 @@
 import cv2
 import numpy as np
-import face_recognition
-import os
 import mysql.connector
+import pickle
+from deepface import DeepFace
+from mtcnn import MTCNN
 from datetime import datetime
+from scipy.spatial.distance import cosine
 
+# Connect to MySQL
 def connect_to_mysql():
     try:
         conn = mysql.connector.connect(
-            host="localhost",
+            host="LocalHost",
             user="root",
             password="Dhrumil332211",
             database="face_recognition"
         )
-        cursor = conn.cursor(dictionary=True, buffered=True)
+        cursor = conn.cursor()
         print("[INFO] Connected to MySQL successfully.")
         return conn, cursor
     except mysql.connector.Error as err:
         print(f"[ERROR] MySQL connection failed: {err}")
         return None, None
 
-def mark_attendance(enrollment_no, name):
-    conn, cursor = connect_to_mysql()
-    if not conn or not cursor:
-        print("[ERROR] Database connection failed")
-        return False
+# Function to fetch stored face embeddings
+def get_registered_faces(cursor):
+    cursor.execute("SELECT name, enrollment_no, embedding FROM face_data")
+    records = cursor.fetchall()
     
-    try:
-        # Check if already marked present today
-        today = datetime.now().strftime('%Y-%m-%d')
-        cursor.execute("""
-            SELECT id FROM attendance_records 
-            WHERE enrollment_no = %s AND DATE(timestamp) = %s AND status = 'Present'
-        """, (enrollment_no, today))
-        
-        if cursor.fetchone():
-            print(f"[INFO] {name} already marked present today")
-            cursor.close()
-            conn.close()
-            return False
-            
-        # Mark attendance
-        cursor.execute("""
-            INSERT INTO attendance_records (enrollment_no, name, status, timestamp) 
-            VALUES (%s, %s, %s, NOW())
-        """, (enrollment_no, name, "Present"))
-        conn.commit()
-        print(f"[INFO] {name} marked present successfully!")
-        
-        cursor.close()
-        conn.close()
-        return True
-    except Exception as e:
-        print(f"[ERROR] Failed to mark attendance: {e}")
-        if conn:
-            conn.close()
-        return False
+    stored_faces = []
+    for name, enrollment_no, embedding_text in records:
+        embedding_list = list(map(float, embedding_text.split(',')))
+        stored_faces.append((name, enrollment_no, embedding_list))
+    
+    return stored_faces
 
-def recognize_faces():
-    # Path to the directory containing face encodings
-    path = 'face_encodings'
-    known_face_encodings = []
-    known_names = []
-    known_enrollment_nos = []
-    
-    # Load known faces
-    try:
-        conn, cursor = connect_to_mysql()
-        if not conn or not cursor:
-            print("[ERROR] Database connection failed")
-            return
-            
-        cursor.execute("SELECT enrollment_no, name FROM manual_attendance")
-        students = cursor.fetchall()
-        
-        cursor.close()
-        conn.close()
-        
-        # Load encodings for each student if they exist
-        for student in students:
-            encoding_file = os.path.join(path, f"{student['enrollment_no']}.npy")
-            if os.path.exists(encoding_file):
-                face_encoding = np.load(encoding_file)
-                known_face_encodings.append(face_encoding)
-                known_names.append(student['name'])
-                known_enrollment_nos.append(student['enrollment_no'])
-                print(f"[INFO] Loaded encoding for {student['name']}")
-    except Exception as e:
-        print(f"[ERROR] Failed to load encodings: {e}")
+# Function to detect face
+def detect_face(frame):
+    detector = MTCNN()
+    faces = detector.detect_faces(frame)
+    if faces:
+        x, y, w, h = faces[0]['box']
+        return frame[y:y+h, x:x+w]
+    return None
+
+# Function to mark attendance in MySQL
+def mark_attendance(cursor, conn, name, enrollment_no):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    cursor.execute("INSERT INTO attendance (enrollment_no, name, timestamp) VALUES (%s, %s, %s)", 
+                   (enrollment_no, name, timestamp))
+    conn.commit()
+    print(f"[INFO] Attendance marked for {name} ({enrollment_no}) at {timestamp}")
+
+# Function to recognize and mark attendance
+def recognize_face():
+    conn, cursor = connect_to_mysql()
+    if conn is None or cursor is None:
         return
-    
-    # Start video capture
+
+    stored_faces = get_registered_faces(cursor)
+
     cap = cv2.VideoCapture(0)
-    
-    # Set timeout for attendance (30 seconds)
-    start_time = datetime.now()
-    timeout_seconds = 30
-    marked_students = set()
-    
-    print("[INFO] Starting face recognition. Press 'q' to quit.")
-    
+    if not cap.isOpened():
+        print("[ERROR] Camera not found.")
+        return
+
+    print("[INFO] Capturing face for recognition...")
+
     while True:
-        # Check for timeout
-        elapsed = (datetime.now() - start_time).total_seconds()
-        if elapsed > timeout_seconds:
-            print(f"[INFO] Timeout after {timeout_seconds} seconds")
-            break
-            
-        # Capture frame
         ret, frame = cap.read()
         if not ret:
-            print("[ERROR] Failed to grab frame")
+            print("[ERROR] Camera frame not available.")
             break
-            
-        # Resize frame for faster processing
-        small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
-        
-        # Convert from BGR to RGB
-        rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
-        
-        # Find faces in current frame
-        face_locations = face_recognition.face_locations(rgb_small_frame)
-        face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
-        
-        for face_encoding in face_encodings:
-            # Compare with known faces
-            matches = face_recognition.compare_faces(known_face_encodings, face_encoding, tolerance=0.6)
-            
-            if True in matches:
-                # Get index of matching face
-                match_index = matches.index(True)
-                name = known_names[match_index]
-                enrollment_no = known_enrollment_nos[match_index]
+
+        detected_face = detect_face(frame)
+        if detected_face is not None:
+            detected_face = cv2.resize(detected_face, (160, 160))
+
+            try:
+                # Generate embedding for detected face
+                embedding = DeepFace.represent(detected_face, model_name="Facenet")[0]['embedding']
                 
-                # Skip if already marked
-                if enrollment_no in marked_students:
-                    continue
-                    
-                # Mark attendance
-                if mark_attendance(enrollment_no, name):
-                    print(f"[INFO] Marked attendance for {name} ({enrollment_no})")
-                    marked_students.add(enrollment_no)
-                    
-                    # Display text on frame
-                    cv2.putText(frame, f"Marked: {name}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            else:
-                # Unknown face
-                cv2.putText(frame, "Unknown", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-        
-        # Display frame
-        cv2.imshow('Face Recognition', frame)
-        
-        # Exit on 'q' press
+                # Compare with stored embeddings
+                for name, enrollment_no, stored_embedding in stored_faces:
+                    similarity = 1 - cosine(embedding, stored_embedding)  # Cosine similarity
+
+                    if similarity > 0.5:  # Threshold for match
+                        print(f"[INFO] Recognized: {name} ({enrollment_no}) with confidence {similarity:.2f}")
+                        mark_attendance(cursor, conn, name, enrollment_no)
+                        break
+                else:
+                    print("[INFO] No match found.")
+
+            except Exception as e:
+                print(f"[ERROR] Error in face recognition: {e}")
+
+        cv2.imshow("Face Recognition", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-    
-    # Release resources
+
     cap.release()
     cv2.destroyAllWindows()
-    
-    print(f"[INFO] Attendance marked for {len(marked_students)} students")
-    
-if __name__ == "__main__":
-    recognize_faces()
+    cursor.close()
+    conn.close()
+
+if __name__ == "_main_":
+    recognize_face()

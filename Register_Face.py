@@ -76,7 +76,7 @@ def register_face():
                 engine.say(f"Move to {angles[captured_count]}")
                 engine.runAndWait()
 
-                face_path = os.path.join(face_dir, f"{name}_{enrollment_no}_{angles[captured_count].replace(' ', '_')}.jpg")
+                face_path = os.path.join(face_dir, f"{name}{enrollment_no}{angles[captured_count].replace(' ', '_')}.jpg")
                 cv2.imwrite(face_path, face_resized)
                 captured_faces.append(face_resized)
 
@@ -98,7 +98,7 @@ def register_face():
     try:
         embeddings = []
         for face in captured_faces:
-            embedding = DeepFace.represent(face, model_name="Facenet", enforce_detection=False)[0]['embedding']
+            embedding = DeepFace.represent(face, model_name="Facenet")[0]['embedding']
             embeddings.append(embedding)
 
         avg_embedding = np.mean(embeddings, axis=0)  # Average embedding

@@ -3,98 +3,24 @@ document.addEventListener("DOMContentLoaded", function () {
     let markAttendanceBtn = document.getElementById("markAttendanceBtn");
     let addManualUserBtn = document.getElementById("addManualUserBtn");
     let saveAttendanceBtn = document.getElementById("saveAttendanceBtn");
-    let clearAttendanceBtn = document.getElementById("clearAttendanceBtn");
 
     if (addUserBtn) addUserBtn.addEventListener("click", addNewUser);
     if (markAttendanceBtn) markAttendanceBtn.addEventListener("click", markAttendance);
     if (addManualUserBtn) addManualUserBtn.addEventListener("click", addManualUser);
     if (saveAttendanceBtn) saveAttendanceBtn.addEventListener("click", saveAttendance);
-    if (clearAttendanceBtn) clearAttendanceBtn.addEventListener("click", clearAttendance);
 
     loadStudents(); // Load students when the page loads
 });
 
-// Clear today's attendance
-function clearAttendance() {
-    if (!confirm("Are you sure you want to clear today's attendance?")) return;
-    
-    fetch('/clear_attendance', { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-            loadAttendanceStatus(); // Refresh attendance status
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("Error clearing attendance: " + error);
-        });
-}
-
 // Show manual attendance section and load students
 function showManualAttendance() {
     document.getElementById("manualAttendanceSection").classList.toggle("hidden");
-    document.getElementById("faceRecognitionSection").classList.add("hidden"); // Hide other section
-    document.getElementById("attendanceStatusSection").classList.remove("hidden");
-    loadStudents();
-    loadAttendanceStatus();
+    loadStudents();  
 }
 
 function showFaceRecognition() {
     console.log("Face Recognition button clicked!"); // Debugging log
     document.getElementById("faceRecognitionSection").classList.toggle("hidden");
-    document.getElementById("manualAttendanceSection").classList.add("hidden"); // Hide other section
-    document.getElementById("attendanceStatusSection").classList.remove("hidden");
-    loadAttendanceStatus();
-}
-
-// Load attendance status
-function loadAttendanceStatus() {
-    // Show loading indicators
-    document.getElementById("presentStudentsList").innerHTML = "<li>Loading...</li>";
-    document.getElementById("absentStudentsList").innerHTML = "<li>Loading...</li>";
-    
-    fetch('/get_attendance_status')
-    .then(response => response.json())
-    .then(data => {
-        updateAttendanceLists(data.present, data.absent);
-    })
-    .catch(error => {
-        console.error("Error loading attendance status:", error);
-        document.getElementById("presentStudentsList").innerHTML = "<li>Error loading data</li>";
-        document.getElementById("absentStudentsList").innerHTML = "<li>Error loading data</li>";
-    });
-}
-
-// Update attendance lists in UI
-function updateAttendanceLists(presentStudents, absentStudents) {
-    const presentList = document.getElementById("presentStudentsList");
-    const absentList = document.getElementById("absentStudentsList");
-    
-    // Clear existing lists
-    presentList.innerHTML = "";
-    absentList.innerHTML = "";
-    
-    // Add present students to list
-    if (presentStudents.length === 0) {
-        presentList.innerHTML = "<li>No students present</li>";
-    } else {
-        presentStudents.forEach(student => {
-            const listItem = document.createElement("li");
-            listItem.textContent = `${student.name} (${student.enrollment_no})`;
-            presentList.appendChild(listItem);
-        });
-    }
-    
-    // Add absent students to list
-    if (absentStudents.length === 0) {
-        absentList.innerHTML = "<li>No students absent</li>";
-    } else {
-        absentStudents.forEach(student => {
-            const listItem = document.createElement("li");
-            listItem.textContent = `${student.name} (${student.enrollment_no})`;
-            absentList.appendChild(listItem);
-        });
-    }
 }
 
 // Load students and prevent duplicate names
@@ -163,15 +89,8 @@ function saveAttendance() {
 
     tableRows.forEach(row => {
         let studentId = row.getAttribute("data-student-id");
-        if (!studentId) return;  // Skip if no student ID
-        
-        let presentRadio = row.querySelector(`input[name="status${studentId}"][value="Present"]`);
-        let absentRadio = row.querySelector(`input[name="status${studentId}"][value="Absent"]`);
-        
-        if (!presentRadio || !absentRadio) return;  // Skip if radio buttons not found
-        
-        let presentChecked = presentRadio.checked;
-        let absentChecked = absentRadio.checked;
+        let presentChecked = row.querySelector(`input[name="status${studentId}"][value="Present"]`).checked;
+        let absentChecked = row.querySelector(`input[name="status${studentId}"][value="Absent"]`).checked;
 
         let status = presentChecked ? "Present" : absentChecked ? "Absent" : null;
         if (status) {
@@ -195,7 +114,6 @@ function saveAttendance() {
     .then(data => {
         alert(data.message);
         console.log("Server Response:", data);
-        loadAttendanceStatus(); // Refresh attendance status after saving
     })
     .catch(error => {
         console.error("Fetch error:", error);
@@ -212,7 +130,6 @@ function removeStudent(studentId) {
     .then(data => {
         alert(data.message);
         loadStudents();  // Refresh student list after deletion
-        loadAttendanceStatus(); // Also refresh attendance status
     })
     .catch(error => {
         console.error("Fetch error:", error);
@@ -236,52 +153,17 @@ function addNewUser() {
         body: JSON.stringify({ name: name, enrollment_no: enrollmentNo })
     })
     .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-        loadStudents(); // Refresh student list
-    })
+    .then(data => alert(data.message))
     .catch(error => console.error("Error:", error));
 }
-
 function markAttendance() {
-    console.log("Start Recognition button clicked!");
-    
-    // Show loading state
-    document.getElementById("attendanceStatusSection").classList.remove("hidden");
-    document.getElementById("presentStudentsList").innerHTML = "<li>Starting face recognition...</li>";
-    document.getElementById("absentStudentsList").innerHTML = "<li>Please wait...</li>";
-    
+    console.log("Start Recognition button clicked!");  // Check if button is working
+
     fetch('/mark_attendance', { method: 'POST' })
         .then(response => response.json())
         .then(data => {
-            console.log("Server response:", data);
+            console.log("Server response:", data);  // Debug Flask response
             alert(data.message);
-            
-            // Set up polling to check for attendance updates
-            pollAttendanceUpdates();
         })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("Error: " + error);
-        });
-}
-
-// Poll for attendance updates every few seconds
-function pollAttendanceUpdates() {
-    // Update immediately
-    loadAttendanceStatus();
-    
-    // Then update every 3 seconds for 30 seconds
-    let count = 0;
-    const maxCount = 10;  // 10 x 3 seconds = 30 seconds of polling
-    
-    const intervalId = setInterval(() => {
-        count++;
-        loadAttendanceStatus();
-        
-        if (count >= maxCount) {
-            clearInterval(intervalId);
-            console.log("Finished polling for attendance updates");
-        }
-    }, 3000);
+        .catch(error => console.error("Error:", error));
 }

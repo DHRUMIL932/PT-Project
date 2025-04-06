@@ -40,27 +40,29 @@
             </div>
         </div>
 
-        <!-- Attendance Status Section - New Addition -->
-        <!-- Add this button after the other buttons in the controls section -->
-        <div class="controls-container">
-            <!-- Existing buttons... -->
-            <button id="clearAttendanceBtn" class="btn btn-warning">Clear Today's Attendance</button>
-        </div>
-        
-        <!-- Attendance Status Section -->
-        <div id="attendanceStatusSection" class="hidden">
-            <h2>Attendance Status</h2>
+        <!-- Attendance Status Section
+        <div id="attendanceStatusSection">
+            <h2>Today's Attendance Status</h2>
             <div class="status-container">
                 <div class="present-students">
                     <h3>Present Students</h3>
-                    <ul id="presentStudentsList"></ul>
+                    <div class="status-count" id="presentCount"></div>
+                    <ul id="presentStudentsList">
+                        <li>Loading present students...</li>
+                    </ul>
                 </div>
                 <div class="absent-students">
                     <h3>Absent Students</h3>
-                    <ul id="absentStudentsList"></ul>
+                    <div class="status-count" id="absentCount"></div>
+                    <ul id="absentStudentsList">
+                        <li>Loading absent students...</li>
+                    </ul>
                 </div>
             </div>
-        </div>
+            <div class="refresh-button">
+                <button onclick="loadAttendanceStatus()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+        </div> -->
 
         <!-- Manual Attendance Section -->
         <div id="manualAttendanceSection" class="hidden">
@@ -85,24 +87,20 @@
         <!-- Face Recognition Section -->
         <div id="faceRecognitionSection" class="hidden">
             <h2>Face Recognition</h2>
-            <button id="addUserBtn">Add New User</button>
-            <button id="markAttendanceBtn">Mark Attendance</button>
-            <!-- Add User Options -->
-            <div id="addUserOptions" class="hidden">
-                <h3>Add New User</h3>
-                <button onclick="showCamera('video1', 'closeCamera1')">Capture Photo</button>
-                <button onclick="uploadPhoto()">Upload Photo</button>
-                <video id="video1" width="320" height="240" autoplay class="hidden"></video>
-                <button id="closeCamera1" class="hidden" onclick="closeCamera('video1', 'closeCamera1')">Close
-                    Camera</button>
+            <div class="recognition-controls">
+                <button id="addUserBtn">Add New User</button>
+                <button id="markAttendanceBtn">Start Face Recognition</button>
             </div>
-            <!-- Mark Attendance -->
-            <div id="markAttendanceSection" class="hidden">
-                <h3>Mark Attendance</h3>
-                <button onclick="showCamera('video2', 'closeCamera2')">Capture Photo</button>
-                <button id="closeCamera2" class="hidden" onclick="closeCamera('video2', 'closeCamera2')">Close
-                    Camera</button>
-                <video id="video2" width="320" height="240" autoplay class="hidden"></video>
+            <div id="recognitionStatus" class="hidden">
+                <h3>Recognition in Progress</h3>
+                <p>Please look at the camera. Processing may take a moment.</p>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+            <div id="recognitionResult" class="hidden">
+                <h3>Recognition Results</h3>
+                <ul id="recognizedStudentsList"></ul>
             </div>
         </div>
     </div>

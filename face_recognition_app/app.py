@@ -321,29 +321,6 @@ def get_students():
     conn.close()
     return jsonify(students)
 
-# Add this route to your Flask app
-@app.route('/clear_attendance', methods=['POST'])
-def clear_attendance():
-    try:
-        conn, cursor = connect_to_mysql()
-        if not conn or not cursor:
-            return jsonify({"message": "Database connection failed"}), 500
-
-        # Get today's date
-        today = datetime.now().strftime('%Y-%m-%d')
-        
-        # Delete today's attendance records
-        cursor.execute("DELETE FROM attendance_records WHERE DATE(timestamp) = %s", (today,))
-        conn.commit()
-        
-        cursor.close()
-        conn.close()
-        
-        return jsonify({"message": "Today's attendance cleared successfully!"})
-    except Exception as e:
-        print(f"[ERROR] Error clearing attendance: {e}")
-        return jsonify({"message": f"Error: {str(e)}"}), 500
-
 # Route to add a new student manually
 @app.route('/add_manual_user', methods=['POST'])
 def add_manual_user():
@@ -422,29 +399,11 @@ def add_new_user():
 @app.route('/mark_attendance', methods=['POST'])
 def mark_attendance():
     try:
-        # Start the face recognition process - use wait=True for blocking call
-        process = subprocess.Popen(["python", "recognize_face.py"], 
-                                  stdout=subprocess.PIPE, 
-                                  stderr=subprocess.PIPE)
-        
-        # Wait for a short time to see if process starts successfully
-        try:
-            process.wait(timeout=1)
-            if process.returncode != 0:
-                stderr = process.stderr.read().decode('utf-8')
-                return jsonify({"message": f"Face recognition failed to start: {stderr}"}), 500
-        except subprocess.TimeoutExpired:
-            # Process is still running, which is good
-            pass
-            
-        # Don't wait for completion - recognition is happening in background
-        return jsonify({
-            "message": "Face recognition has started. Attendance will be updated shortly.",
-            "success": True
-        })
+        subprocess.Popen(["python", ("recognize_face.py")])
+        return jsonify({"message": "Face recognition started!"})
     except Exception as e:
         return jsonify({"message": f"Error: {str(e)}"}), 500
-        
+
 @app.route('/remove_student/<int:student_id>', methods=['DELETE'])
 def remove_student(student_id):
     try:
@@ -566,51 +525,6 @@ def update_teacher():
     conn.close()
 
     return redirect(url_for('home'))  # Redirect to refresh the homepage with updated info
-
-# Route to get attendance status
-@app.route('/get_attendance_status', methods=['GET'])
-def get_attendance_status():
-    try:
-        conn, cursor = connect_to_mysql()
-        if not conn or not cursor:
-            return jsonify({"message": "Database connection failed"}), 500
-
-        # Get today's date
-        today = datetime.now().strftime('%Y-%m-%d')
-        
-        # Query for all students (to identify who's absent by omission)
-        cursor.execute("SELECT id, enrollment_no, name FROM manual_attendance")
-        all_students = {student['enrollment_no']: student for student in cursor.fetchall()}
-        
-        # Query for present students today
-        cursor.execute("""
-            SELECT DISTINCT enrollment_no, name FROM attendance_records 
-            WHERE status = 'Present' AND DATE(timestamp) = %s
-        """, (today,))
-        present_students = cursor.fetchall()
-        
-        # Create set of present enrollment numbers
-        present_enrollment_nos = {student['enrollment_no'] for student in present_students}
-        
-        # Determine absent students (anyone not marked present)
-        absent_students = []
-        for enrollment_no, student in all_students.items():
-            if enrollment_no not in present_enrollment_nos:
-                absent_students.append({
-                    'enrollment_no': enrollment_no,
-                    'name': student['name']
-                })
-        
-        cursor.close()
-        conn.close()
-        
-        return jsonify({
-            "present": present_students,
-            "absent": absent_students
-        })
-    except Exception as e:
-        print(f"[ERROR] Error getting attendance status: {e}")
-        return jsonify({"message": f"Error: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
