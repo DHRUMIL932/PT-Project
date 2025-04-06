@@ -10,6 +10,59 @@
     <!-- Correct way to link JavaScript -->
     <script src="{{ url_for('static', filename='js/AttendanceSystem.js') }}" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        /* Additional styles for recognition results */
+        #recognizedStudentsList {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #recognizedStudentsList li {
+            padding: 8px;
+            margin-bottom: 5px;
+            border-left: 4px solid #4CAF50;
+            background-color: #f9f9f9;
+        }
+
+        .status-present {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .status-absent {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 13px;
+            padding: 3px;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 10px;
+            animation: progress-animation 2s infinite;
+        }
+
+        @keyframes progress-animation {
+            0% {
+                width: 10%;
+            }
+
+            50% {
+                width: 90%;
+            }
+
+            100% {
+                width: 10%;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -40,30 +93,6 @@
             </div>
         </div>
 
-        <!-- Attendance Status Section
-        <div id="attendanceStatusSection">
-            <h2>Today's Attendance Status</h2>
-            <div class="status-container">
-                <div class="present-students">
-                    <h3>Present Students</h3>
-                    <div class="status-count" id="presentCount"></div>
-                    <ul id="presentStudentsList">
-                        <li>Loading present students...</li>
-                    </ul>
-                </div>
-                <div class="absent-students">
-                    <h3>Absent Students</h3>
-                    <div class="status-count" id="absentCount"></div>
-                    <ul id="absentStudentsList">
-                        <li>Loading absent students...</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="refresh-button">
-                <button onclick="loadAttendanceStatus()"><i class="fas fa-sync-alt"></i> Refresh</button>
-            </div>
-        </div> -->
-
         <!-- Manual Attendance Section -->
         <div id="manualAttendanceSection" class="hidden">
             <h2>Manual Attendance</h2>
@@ -84,6 +113,7 @@
             </table>
             <button id="saveAttendanceBtn">Save Attendance</button>
         </div>
+
         <!-- Face Recognition Section -->
         <div id="faceRecognitionSection" class="hidden">
             <h2>Face Recognition</h2>
@@ -91,6 +121,8 @@
                 <button id="addUserBtn">Add New User</button>
                 <button id="markAttendanceBtn">Start Face Recognition</button>
             </div>
+
+            <!-- Processing indicator -->
             <div id="recognitionStatus" class="hidden">
                 <h3>Recognition in Progress</h3>
                 <p>Please look at the camera. Processing may take a moment.</p>
@@ -98,9 +130,19 @@
                     <div class="progress-fill"></div>
                 </div>
             </div>
+
+            <!-- Results display -->
             <div id="recognitionResult" class="hidden">
                 <h3>Recognition Results</h3>
-                <ul id="recognizedStudentsList"></ul>
+                <div class="card">
+                    <h4>Students Recognized Today</h4>
+                    <ul id="recognizedStudentsList">
+                        <!-- List will be populated dynamically -->
+                    </ul>
+                </div>
+                <button onclick="loadRecognizedStudents()" class="refresh-btn">
+                    <i class="fas fa-sync-alt"></i> Refresh Results
+                </button>
             </div>
         </div>
     </div>

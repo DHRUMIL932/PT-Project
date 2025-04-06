@@ -6,6 +6,8 @@ from flask_bcrypt import Bcrypt  # For password hashing
 import mysql.connector
 from datetime import datetime
 import subprocess
+from deepface.DeepFace import build_model
+model = build_model("Facenet")
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Change this for security
@@ -525,6 +527,69 @@ def update_teacher():
     conn.close()
 
     return redirect(url_for('home'))  # Redirect to refresh the homepage with updated info
+
+def recognize_face():
+    conn, cursor = connect_to_mysql()
+    if conn is None or cursor is None:
+        return
+
+    stored_faces = get_registered_faces(cursor)
+
+    # Preload the DeepFace model
+    from deepface.DeepFace import build_model
+    model = build_model("Facenet")
+
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
+    if not cap.isOpened():
+        print("[ERROR] Camera not found.")
+        return
+
+    print("[INFO] Capturing face for recognition...")
+
+    frame_count = 0
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("[ERROR] Camera frame not available.")
+            break
+
+        frame_count += 1
+        if frame_count % 2 != 0:  # Skip every other frame
+            continue
+
+        detected_face = detect_face(frame)
+        if detected_face is not None:
+            detected_face = cv2.resize(detected_face, (160, 160))
+
+            try:
+                # Generate embedding for detected face using preloaded model
+                embedding = DeepFace.represent(detected_face, model_name="Facenet", model=model)[0]['embedding']
+
+                # Compare with stored embeddings
+                for name, enrollment_no, stored_embedding in stored_faces:
+                    similarity = 1 - cosine(embedding, stored_embedding)  # Cosine similarity
+
+                    if similarity > 0.5:  # Threshold for match
+                        print(f"[INFO] Recognized: {name} ({enrollment_no}) with confidence {similarity:.2f}")
+                        mark_attendance(cursor, conn, name, enrollment_no)
+                        break
+                else:
+                    print("[INFO] No match found.")
+
+            except Exception as e:
+                print(f"[ERROR] Error in face recognition: {e}")
+
+        cv2.imshow("Face Recognition", frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+    cursor.close()
+    conn.close()
 
 if __name__ == '__main__':
     app.run(debug=True)
